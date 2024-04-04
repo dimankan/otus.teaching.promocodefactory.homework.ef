@@ -15,6 +15,9 @@ namespace Otus.Teaching.PromoCodeFactory.DataAccess
         }
 
         public DbSet<Employee> Employees { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<Preference> Preferences { get; set; }
+        public DbSet<Customer> Customers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

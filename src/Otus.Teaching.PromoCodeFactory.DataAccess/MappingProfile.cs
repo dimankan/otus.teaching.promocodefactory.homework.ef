@@ -1,10 +1,6 @@
 ﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Threading.Tasks;
+using DomainAdmin = Otus.Teaching.PromoCodeFactory.Core.Domain.Administration;
+using DomainPromoCodeManagment = Otus.Teaching.PromoCodeFactory.Core.Domain.PromoCodeManagement;
 
 namespace Otus.Teaching.PromoCodeFactory.DataAccess
 {
@@ -12,8 +8,11 @@ namespace Otus.Teaching.PromoCodeFactory.DataAccess
     {
         public MappingProfile()
         {
-            //CreateMap<Blog, Domain.Blog>().ReverseMap();
-            //CreateMap<Author, Domain.Author>().ReverseMap();
+            CreateMap<Entities.Employee, DomainAdmin.Employee>().ReverseMap();
+            CreateMap<Entities.Role, DomainAdmin.Role>().ReverseMap();
+            
+            CreateMap<Entities.Customer, DomainPromoCodeManagment.Customer>().ReverseMap();
+            CreateMap<Entities.Preference, DomainPromoCodeManagment.Preference>().ReverseMap();
         }
     }
 }

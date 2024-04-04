@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -35,7 +36,7 @@ namespace Otus.Teaching.PromoCodeFactory.WebHost
             services.AddControllers();
 
             services.AddDbContext<DataBaseContext>(options => options.UseSqlite(Configuration.GetConnectionString("SQLiteConnection")));
-            
+
             services.AddAutoMapper(x => x.AddProfile<MappingProfile>());
 
             services.AddScoped<IRepository<Employee>, EfRepository<Employee>>();
@@ -58,8 +59,23 @@ namespace Otus.Teaching.PromoCodeFactory.WebHost
                 dbContext.Database.EnsureCreated();
                 dbContext.Database.Migrate();
 
-                // todo: «аполнение данными из статического класса
-                // 
+                // «аполнение данными из статического класса
+
+                var mapper = app.ApplicationServices.GetService<IMapper>();
+
+                var employees = FakeDataFactory.Employees.Select(x => mapper.Map<DataAccess.Entities.Employee>(x)).ToList();
+                dbContext.Employees.AddRange(employees);
+
+                var customers = FakeDataFactory.Customers.Select(x => mapper.Map<DataAccess.Entities.Customer>(x)).ToList();
+                dbContext.Customers.AddRange(customers);
+
+                var preferences = FakeDataFactory.Preferences.Select(x => mapper.Map<DataAccess.Entities.Preference>(x)).ToList();
+                dbContext.Preferences.AddRange(preferences);
+
+                var roles = FakeDataFactory.Roles.Select(x => mapper.Map<DataAccess.Entities.Role>(x)).ToList();
+                dbContext.Roles.AddRange(roles);
+
+                dbContext.SaveChanges();
             }
 
             if (env.IsDevelopment())
@@ -76,7 +92,7 @@ namespace Otus.Teaching.PromoCodeFactory.WebHost
             {
                 x.DocExpansion = "list";
             });
-            
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
