@@ -19,10 +19,10 @@ namespace Otus.Teaching.PromoCodeFactory.WebHost.Controllers
     {
         private readonly IRepository<Employee> _employeeRepository;
 
-        public EmployeesController(IRepository<Employee> employeeRepository)
-        {
-            _employeeRepository = employeeRepository;
-        }
+        //public EmployeesController(IRepository<Employee> employeeRepository)
+        //{
+        //    _employeeRepository = employeeRepository;
+        //}
         
         /// <summary>
         /// Получить данные всех сотрудников

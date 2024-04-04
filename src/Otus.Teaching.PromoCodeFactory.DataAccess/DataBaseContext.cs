@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Otus.Teaching.PromoCodeFactory.DataAccess.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,13 @@ namespace Otus.Teaching.PromoCodeFactory.DataAccess
     {
         public DataBaseContext(DbContextOptions<DataBaseContext> options) : base(options)
         {
+        }
+
+        public DbSet<Employee> Employees { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

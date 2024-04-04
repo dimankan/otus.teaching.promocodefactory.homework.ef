@@ -17,10 +17,10 @@ namespace Otus.Teaching.PromoCodeFactory.WebHost.Controllers
     {
         private readonly IRepository<Role> _rolesRepository;
 
-        public RolesController(IRepository<Role> rolesRepository)
-        {
-            _rolesRepository = rolesRepository;
-        }
+        //public RolesController(IRepository<Role> rolesRepository)
+        //{
+        //    _rolesRepository = rolesRepository;
+        //}
         
         /// <summary>
         /// Получить все доступные роли сотрудников
