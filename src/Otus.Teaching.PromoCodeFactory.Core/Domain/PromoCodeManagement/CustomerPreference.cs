@@ -1,17 +1,17 @@
 ﻿using System;
-using System.Runtime;
-using Otus.Teaching.PromoCodeFactory.Core.Domain.Administration;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Otus.Teaching.PromoCodeFactory.Core.Domain.PromoCodeManagement
 {
-    public class PromoCode
-        : BaseEntity
+    public class CustomerPreference
     {
-        public string Code { get; set; }
-
         public Guid CustomerId { get; set; }
 
         public virtual Customer Customer { get; set; }
+
 
         public Guid PreferenceId { get; set; }
 

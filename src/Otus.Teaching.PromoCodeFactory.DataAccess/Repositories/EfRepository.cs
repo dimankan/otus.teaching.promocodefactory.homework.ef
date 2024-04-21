@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Otus.Teaching.PromoCodeFactory.Core.Abstractions.Repositories;
 using Otus.Teaching.PromoCodeFactory.Core.Domain;
 using System;
@@ -7,26 +8,42 @@ using System.Threading.Tasks;
 
 namespace Otus.Teaching.PromoCodeFactory.DataAccess.Repositories
 {
-    public class EfRepository<T> : IRepository<T>
-        where T : BaseEntity
+    public class EfRepository<T> : IRepository<T> where T : BaseEntity
     {
-        private readonly DataBaseContext _dbContext;
-        private readonly IMapper _mapper;
+        protected readonly DbContext Context;
 
-        public EfRepository(DataBaseContext dbContext, IMapper mapper)
+        private readonly DbSet<T> _entitySet;
+
+        protected EfRepository(DbContext context)
         {
-            _dbContext = dbContext;
-            _mapper = mapper;
+            Context = context;
+            _entitySet = Context.Set<T>();
         }
 
-        public Task<IEnumerable<T>> GetAllAsync()
+        public virtual async Task<List<T>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return await _entitySet.ToListAsync();
         }
 
-        public Task<T> GetByIdAsync(Guid id)
+        public virtual async Task<T> GetByIdAsync(Guid id)
         {
-            throw new NotImplementedException();
+            return await _entitySet.FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public virtual async Task<T> CreateAsync(T entity)
+        {
+            return (await _entitySet.AddAsync(entity)).Entity;
+        }
+
+        public virtual async Task DeleteAsync(T entity)
+        {
+            _entitySet.Remove(entity);
+            await SaveChangesAsync();
+        }
+
+        public virtual async Task SaveChangesAsync()
+        {
+            await Context.SaveChangesAsync();
         }
     }
 }

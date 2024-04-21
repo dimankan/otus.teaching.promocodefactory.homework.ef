@@ -1,23 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Otus.Teaching.PromoCodeFactory.Core.Abstractions.Repositories;
-using Otus.Teaching.PromoCodeFactory.Core.Domain.Administration;
-using Otus.Teaching.PromoCodeFactory.Core.Domain.PromoCodeManagement;
-using Otus.Teaching.PromoCodeFactory.DataAccess;
-using Otus.Teaching.PromoCodeFactory.DataAccess.Data;
-using Otus.Teaching.PromoCodeFactory.DataAccess.Repositories;
-using Otus.Teaching.PromoCodeFactory.Services.Contracts;
-using Otus.Teaching.PromoCodeFactory.Services.Services;
+using System;
+using System.IO;
+using System.Reflection;
 
 namespace Otus.Teaching.PromoCodeFactory.WebHost
 {
@@ -29,71 +18,46 @@ namespace Otus.Teaching.PromoCodeFactory.WebHost
         }
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddServices(Configuration);
+            
             services.AddControllers();
 
-            services.AddDbContext<DataBaseContext>(options => options.UseSqlite(Configuration.GetConnectionString("SQLiteConnection")));
+            services.AddEndpointsApiExplorer();
 
-            services.AddAutoMapper(x => x.AddProfile<MappingProfile>());
-
-            services.AddScoped<IRepository<Employee>, EfRepository<Employee>>();
-            services.AddScoped<IEmployeeService, EmployeeService>();
-
-            services.AddOpenApiDocument(options =>
+            services.AddSwaggerGen(options =>
             {
-                options.Title = "PromoCode Factory API Doc";
-                options.Version = "1.0";
+                Microsoft.OpenApi.Models.OpenApiInfo openApiInfo = new Microsoft.OpenApi.Models.OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "PromoCodeFactory API",
+                };
+                options.SwaggerDoc("v1", openApiInfo);
+
+                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
             });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IDataInitializer dataInitializer)
         {
-            using (var scope = app.ApplicationServices.CreateScope())
-            {
-                var dbContext = scope.ServiceProvider.GetRequiredService<DataBaseContext>();
-                dbContext.Database.EnsureDeleted();
-                dbContext.Database.EnsureCreated();
-                dbContext.Database.Migrate();
-
-                // «аполнение данными из статического класса
-
-                var mapper = app.ApplicationServices.GetService<IMapper>();
-
-                var employees = FakeDataFactory.Employees.Select(x => mapper.Map<DataAccess.Entities.Employee>(x)).ToList();
-                dbContext.Employees.AddRange(employees);
-
-                var customers = FakeDataFactory.Customers.Select(x => mapper.Map<DataAccess.Entities.Customer>(x)).ToList();
-                dbContext.Customers.AddRange(customers);
-
-                var preferences = FakeDataFactory.Preferences.Select(x => mapper.Map<DataAccess.Entities.Preference>(x)).ToList();
-                dbContext.Preferences.AddRange(preferences);
-
-                var roles = FakeDataFactory.Roles.Select(x => mapper.Map<DataAccess.Entities.Role>(x)).ToList();
-                dbContext.Roles.AddRange(roles);
-
-                dbContext.SaveChanges();
-            }
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI();
+
             }
             else
             {
                 app.UseHsts();
             }
 
-            app.UseOpenApi();
-            app.UseSwaggerUi3(x =>
-            {
-                x.DocExpansion = "list";
-            });
-
             app.UseHttpsRedirection();
+
+            dataInitializer.InitData();
 
             app.UseRouting();
 
