@@ -57,7 +57,8 @@ namespace Otus.Teaching.PromoCodeFactory.WebHost
 
             app.UseHttpsRedirection();
 
-            dataInitializer.InitData();
+            // выключил для проверки миграции
+            //dataInitializer.InitData();
 
             app.UseRouting();
 

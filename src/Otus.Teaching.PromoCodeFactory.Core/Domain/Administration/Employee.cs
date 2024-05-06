@@ -18,5 +18,7 @@ namespace Otus.Teaching.PromoCodeFactory.Core.Domain.Administration
         public virtual Role Role { get; set; }
 
         public int AppliedPromocodesCount { get; set; }
+
+        public DateTime DateTime { get; set; }
     }
 }
