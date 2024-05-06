@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Otus.Teaching.PromoCodeFactory.Services.Contracts;
+using Otus.Teaching.PromoCodeFactory.Services.Models.Customer;
 using Otus.Teaching.PromoCodeFactory.WebHost.Models;
 
 namespace Otus.Teaching.PromoCodeFactory.WebHost.Controllers
@@ -11,42 +14,79 @@ namespace Otus.Teaching.PromoCodeFactory.WebHost.Controllers
     /// </summary>
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class CustomersController
-        : ControllerBase
+    public class CustomersController : ControllerBase
     {
+        private readonly ICustomerService _service;
+        private readonly IMapper _mapper;
+
+        public CustomersController(ICustomerService service, IMapper mapper)
+        {
+            _service = service;
+            _mapper = mapper;
+        }
+
+        /// <summary>
+        /// Получить данные всех клиентов с их предпочтениями
+        /// </summary>
+        /// <returns>Список клиентов с их предпочтениями</returns>
         [HttpGet]
-        public Task<ActionResult<CustomerShortResponse>> GetCustomersAsync()
+        public async Task<List<CustomerModel>> GetAllEntitiesAsync()
         {
-            //TODO: Добавить получение списка клиентов
-            throw new NotImplementedException();
+            return _mapper.Map<List<CustomerModel>>(await _service.GetAllAsync());
         }
-        
-        [HttpGet("{id}")]
-        public Task<ActionResult<CustomerResponse>> GetCustomerAsync(Guid id)
+
+        /// <summary>
+        /// Получить данные клиента по Id с его предпочтениями
+        /// </summary>
+        /// <returns>Данные клиента с его предпочтениями</returns>
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetEntityByIdAsync(Guid id)
         {
-            //TODO: Добавить получение клиента вместе с выданными ему промомкодами
-            throw new NotImplementedException();
+            var entity = _mapper.Map<CustomerModel>(await _service.GetByIdAsync(id));
+            if (entity == null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(entity);
         }
-        
+
+        /// <summary>
+        /// Создать нового клиента по модели из запроса
+        /// </summary>
+        /// <param name="model">Модель из запроса</param>
+        /// <returns></returns>
         [HttpPost]
-        public Task<IActionResult> CreateCustomerAsync(CreateOrEditCustomerRequest request)
+        public async Task<IActionResult> CreateEntityAsync(CreatingCustomerModel model)
         {
-            //TODO: Добавить создание нового клиента вместе с его предпочтениями
-            throw new NotImplementedException();
+            return Ok(await _service.CreateAsync(_mapper.Map<CreatingCustomerDTO>(model)));
         }
-        
-        [HttpPut("{id}")]
-        public Task<IActionResult> EditCustomersAsync(Guid id, CreateOrEditCustomerRequest request)
+
+        /// <summary>
+        /// Изменить существующего клиента
+        /// </summary>
+        /// <param name="id">Id клиента</param>
+        /// <param name="model">Модель из запроса</param>
+        /// <returns></returns>
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateEntityAsync(Guid id, UpdatingCustomerModel model)
         {
-            //TODO: Обновить данные клиента вместе с его предпочтениями
-            throw new NotImplementedException();
+            await _service.UpdateAsync(id, _mapper.Map<UpdatingCustomerModel, UpdatingCustomerDTO>(model));
+
+            return Ok();
         }
-        
-        [HttpDelete]
-        public Task<IActionResult> DeleteCustomer(Guid id)
+
+        /// <summary>
+        /// Удалить клиента
+        /// </summary>
+        /// <param name="id">Id клиента</param>
+        /// <returns></returns>
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteEntityAsync(Guid id)
         {
-            //TODO: Удаление клиента вместе с выданными ему промокодами
-            throw new NotImplementedException();
+            await _service.DeleteAsync(id);
+
+            return Ok();
         }
     }
 }
